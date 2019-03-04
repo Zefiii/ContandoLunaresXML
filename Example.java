@@ -23,6 +23,15 @@ import org.jdom2.input.sax.XMLReaders;
 
 import java.util.Scanner;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.DocumentBuilder;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
+
+//import org.json.JSONException;
+//import org.json.JSONObject;
+//import org.json.XML;
+
 public class Example {
 
     /**
@@ -32,7 +41,7 @@ public class Example {
     public static Document readDocument() {
         try {
             SAXBuilder builder = new SAXBuilder();
-            Document anotherDocument = builder.build(new File("example.xml"));
+            Document anotherDocument = builder.build(new File("myFile.xml"));
             return anotherDocument;
         } catch(JDOMException e) {
             e.printStackTrace();
@@ -118,13 +127,66 @@ public class Example {
     
     public static void commandReset(){
 		Element root = new Element("carrental");
+		root.setProperty(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, "carrental.xsd");
 		Document doc = new Document();
 		doc.setRootElement(root);
 		outputDocumentToFile(doc);
 	}
 	
-	public static void commandNew(){
-		//Scanner sc = new Scannner(System.in);
+public static void commandNew(){
+        
+        System.out.print("Introdueix la marca del cotxe: ");
+        String marca = System.console().readLine();
+        System.out.print("Introdueix el model del cotxe: ");
+        String model = System.console().readLine();
+        System.out.print("Introdueix el nombre de dies: ");
+        String dies = System.console().readLine();
+        System.out.print("Introdueix el nombre de cotexes: ");
+        String cotxes = System.console().readLine();
+        System.out.print("Introdueix el descompte: ");
+        String descompte = System.console().readLine();
+        Document doc = readDocument();
+        Element carElement = new Element("rental").addContent("3");
+        carElement.addContent(new Element("make").addContent(marca));
+        carElement.addContent(new Element("model").addContent(model));
+        carElement.addContent(new Element("nofdays").addContent(dies));
+        carElement.addContent(new Element("nofcars").addContent(cotxes));
+        carElement.addContent(new Element("discount").addContent(descompte));
+        Element root = doc.getRootElement();
+        root.addContent(carElement);
+        outputDocumentToFile(doc);
+        
+    }
+
+	
+	
+	public static void commandList(){
+		try {
+
+			File fXmlFile = new File("myFile.xml");
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			org.w3c.dom.Document doc = dBuilder.parse(fXmlFile);
+			doc.getDocumentElement().normalize();
+			//System.out.println("Root element : " + doc.getDocumentElement().getNodeName());
+			NodeList nList = doc.getElementsByTagName("carrental");   
+			
+			for (int temp = 0; temp < nList.getLength(); temp++) {
+				Node nNode = nList.item(temp);
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
+					org.w3c.dom.Element eElement = (org.w3c.dom.Element) nNode;
+					System.out.println("Rental id : " +","+ eElement.getAttribute("id"));
+					System.out.println("Marca : " +","+ eElement.getElementsByTagName("make").item(0).getTextContent());
+					System.out.println("Model : " +","+ eElement.getElementsByTagName("model").item(0).getTextContent());
+					System.out.println("Nombre dies : " +","+ eElement.getElementsByTagName("nofdays").item(0).getTextContent());
+					System.out.println("Nombre unitats : " +","+ eElement.getElementsByTagName("nofcars").item(0).getTextContent());
+					System.out.println("Descompte : " +","+ eElement.getElementsByTagName("discount").item(0).getTextContent());
+				}
+			}
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}	
 		
 	}
 
@@ -183,6 +245,7 @@ public class Example {
 			Transformer transformer = tFactory.newTransformer(xsltSource);
 			//do the transform
 			transformer.transform(xmlSource, xmlResult);
+			
         } catch(FileNotFoundException e) {
             e.printStackTrace();
         } catch(TransformerConfigurationException e) {
@@ -193,6 +256,20 @@ public class Example {
             e.printStackTrace();
         }
 	}
+	
+	
+	/*public static void commandToJSON() {
+		
+		 try {
+            JSONObject xmlJSONObj = XML.toJSONObject(readDocument());
+            String jsonPrettyPrintString = xmlJSONObj.toString(PRETTY_PRINT_INDENT_FACTOR);
+            System.out.println(jsonPrettyPrintString);
+        } catch (JSONException je) {
+            System.out.println(je.toString());
+        }
+		
+	}*/
+		
 
     /**
      * Main method that allows the various methods to be used.
@@ -208,9 +285,13 @@ public class Example {
             else if(command.equals("removeChild")) removeChildElement(createDocument());
             else if(command.equals("save")) outputDocumentToFile(createDocument());
             else if(command.equals("load")) outputDocument(readDocument());
-            else if(command.equals("xslt")) executeXSLT(createDocument());
+            //else if(command.equals("xslt")) executeXSLT(createDocument());
             else if(command.equals("reset")) commandReset();
+	    else if(command.equals("listnou")) commandList();
             else if(command.equals("new")) commandNew();
+            else if(command.equals("list")) outputDocument(readDocument());
+            else if(command.equals("xslt")) executeXSLT(readDocument());
+            //else if(command.equals("xmltojson")) commandToJSON();
             else {
                 System.out.println(command + " is not a valid option.");
                 printUsage();
