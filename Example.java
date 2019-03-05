@@ -127,7 +127,7 @@ public class Example {
     
     public static void commandReset(){
 		Element root = new Element("carrental");
-		root.setProperty(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, "carrental.xsd");
+		//root.setProperty(Marshaller.JAXB_NO_NAMESPACE_SCHEMA_LOCATION, "carrental.xsd");
 		Document doc = new Document();
 		doc.setRootElement(root);
 		outputDocumentToFile(doc);
@@ -162,32 +162,30 @@ public static void commandNew(){
 	
 	public static void commandList(){
 		try {
-
-			File fXmlFile = new File("myFile.xml");
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			org.w3c.dom.Document doc = dBuilder.parse(fXmlFile);
-			doc.getDocumentElement().normalize();
-			//System.out.println("Root element : " + doc.getDocumentElement().getNodeName());
-			NodeList nList = doc.getElementsByTagName("carrental");   
-			
-			for (int temp = 0; temp < nList.getLength(); temp++) {
-				Node nNode = nList.item(temp);
-				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-					org.w3c.dom.Element eElement = (org.w3c.dom.Element) nNode;
-					System.out.println("Rental id : " +","+ eElement.getAttribute("id"));
-					System.out.println("Marca : " +","+ eElement.getElementsByTagName("make").item(0).getTextContent());
-					System.out.println("Model : " +","+ eElement.getElementsByTagName("model").item(0).getTextContent());
-					System.out.println("Nombre dies : " +","+ eElement.getElementsByTagName("nofdays").item(0).getTextContent());
-					System.out.println("Nombre unitats : " +","+ eElement.getElementsByTagName("nofcars").item(0).getTextContent());
-					System.out.println("Descompte : " +","+ eElement.getElementsByTagName("discount").item(0).getTextContent());
-				}
+	 	    DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		    DocumentBuilder db = dbf.newDocumentBuilder();
+		    org.w3c.dom.Document dom = db.parse("myFile.xml");
+		    org.w3c.dom.Element docEle = dom.getDocumentElement();
+		    NodeList nl = docEle.getChildNodes();
+		    int length = nl.getLength();
+		    for (int i = 0; i < length; i++) {
+			if (nl.item(i).getNodeType() == Node.ELEMENT_NODE) {
+			    org.w3c.dom.Element el = (org.w3c.dom.Element) nl.item(i);
+			    if (el.getNodeName().contains("rental")) {
+				String make = el.getElementsByTagName("make").item(0).getTextContent();
+				String model = el.getElementsByTagName("model").item(0).getTextContent();
+				String units = el.getElementsByTagName("nofcars").item(0).getTextContent();
+				String days = el.getElementsByTagName("nofdays").item(0).getTextContent();
+				String discount = el.getElementsByTagName("discount").item(0).getTextContent();
+				System.out.println("Marca: " + make + " " + "Model: " + model + " " + "Unitats: " + units + " " + "Nombre de dies: " + days + " " + "Descompte: " + discount); 
+			    }
 			}
-		} 
+		    }
+		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}	
-		
+				
 	}
 
     /**
